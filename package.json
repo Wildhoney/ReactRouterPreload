@@ -1,0 +1,29 @@
+{
+  "name": "react-router-cwf",
+  "version": "0.1.0",
+  "description": "Augments React Router v4 to support preloading data before route changes, AJAX cancellation, and other niceties that were a whole lot easier with React Router v3.",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wildhoney/react-router-cwf.git"
+  },
+  "keywords": [
+    "react",
+    "router",
+    "async",
+    "preloading",
+    "data",
+    "preload",
+    "ajax",
+    "cancel"
+  ],
+  "author": "Adam Timberlake <adam.timberlake@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Wildhoney/react-router-cwf/issues"
+  },
+  "homepage": "https://github.com/Wildhoney/react-router-cwf#readme"
+}
