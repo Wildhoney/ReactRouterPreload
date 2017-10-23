@@ -40,12 +40,15 @@
     "babel-preset-react": "~6.24.1",
     "babel-preset-stage-0": "~6.24.1",
     "browser-env": "~3.2.1",
+    "delay": "~2.0.0",
     "enzyme": "~3.0.0",
     "enzyme-adapter-react-16": "~1.0.1",
     "react": "~16.0.0",
     "react-dom": "~16.0.0",
     "react-router-dom": "~4.1.2",
-    "react-test-renderer": "~16.0.0"
+    "react-test-renderer": "~16.0.0",
+    "sinon": "~2.3.8",
+    "starwars": "~1.0.0"
   },
   "ava": {
     "concurrency": 3,
