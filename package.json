@@ -1,5 +1,5 @@
 {
-  "name": "react-router-cwf",
+  "name": "react-router-preload",
   "version": "0.1.0",
   "description": "Augments React Router v4 to support preloading data before route changes, AJAX cancellation, and other niceties that were a whole lot easier with React Router v3.",
   "main": "dist/index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wildhoney/react-router-cwf.git"
+    "url": "git+https://github.com/Wildhoney/react-router-preload.git"
   },
   "keywords": [
     "react",
@@ -23,11 +23,43 @@
   "author": "Adam Timberlake <adam.timberlake@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Wildhoney/react-router-cwf/issues"
+    "url": "https://github.com/Wildhoney/react-router-preload/issues"
   },
-  "homepage": "https://github.com/Wildhoney/react-router-cwf#readme",
+  "homepage": "https://github.com/Wildhoney/react-router-preload#readme",
   "dependencies": {
     "history": "~4.7.2",
     "react-router-config": "~1.0.0-beta.4"
+  },
+  "peerDependencies": {
+    "history": ">=4.0.0",
+    "react-router-config": ">=1.0.0"
+  },
+  "devDependencies": {
+    "ava": "~0.19.1",
+    "babel-polyfill": "~6.23.0",
+    "babel-preset-es2015": "~6.24.1",
+    "babel-preset-react": "~6.24.1",
+    "babel-preset-stage-0": "~6.24.1",
+    "browser-env": "~3.2.1",
+    "enzyme": "~3.0.0",
+    "enzyme-adapter-react-16": "~1.0.1",
+    "react": "~16.0.0",
+    "react-dom": "~16.0.0",
+    "react-router-dom": "~4.1.2",
+    "react-test-renderer": "~16.0.0"
+  },
+  "ava": {
+    "concurrency": 3,
+    "failFast": true,
+    "files": [
+      "./tests/*.test.js"
+    ],
+    "babel": "inherit",
+    "require": [
+      "babel-polyfill",
+      "babel-register",
+      "./tests/helpers/browser-env.js",
+      "./tests/helpers/enzyme.js"
+    ]
   }
 }
