@@ -1,6 +1,7 @@
 
-import { createBrowserHistory as createHistory } from 'history';
+import { PureComponent } from 'react';
 import { matchRoutes } from 'react-router-config';
+import { createBrowserHistory as createHistory } from 'history';
 
 /**
  * @constant key
@@ -21,6 +22,7 @@ export const handler = Symbol('react-router/fetch-data');
 const defaultOptions = {
     createCancelToken: () => Symbol('cancelToken'),
     cancelOnEscape: true,
+    routeTree: [],
     onEnter: () => console.log('Entering'),
     onLoaded: location => console.log('Entered'),
     onCancel: () => console.log('Cancelled')
@@ -28,13 +30,36 @@ const defaultOptions = {
 
 /**
  * @method withPreload
- * @param {React.Component} Component
+ * @param {React.Component} WrappedComponent
  * @param {Promise} fetchData
  * @return {React.Component}
  */
-export function withPreload(Component, fetchData) {
-    Component[handler] = fetchData;
-    return Component;
+export function withPreload(WrappedComponent, fetchData) {
+
+    return class extends PureComponent {
+
+        /**
+         * @constant handler
+         * @type {Symbol}
+         */
+        static [handler] = fetchData;
+
+        /**
+         * @constant displayName
+         * @type {String}
+         */
+        static displayName = WrappedComponent.displayName || WrappedComponent.name;
+
+        /**
+         * @method render
+         * @return {XML}
+         */
+        render() {
+            return <WrappedComponent {...this.props} />;
+        }
+
+    }
+
 }
 
 /**
@@ -44,7 +69,7 @@ export function withPreload(Component, fetchData) {
  * @return {Promise}
  */
 export function fetchPreload(Component, ...params) {
-    return Component[handler](...params);
+    return handler in Component && Component[handler](...params);
 }
 
 /**
@@ -93,11 +118,11 @@ export function createBrowserHistory(instanceOptions = defaultOptions) {
             const branches = matchRoutes(options.routeTree, location.pathname);
             const cancelToken = options.createCancelToken();
     
-            await Promise.all(branches.map(branch => {
-                const fetchData = branch.route.component[handler] || (() => {});
-                return fetchData({ match: branch.match, cancelToken });
+            await Promise.all(branches.filter(branch => branch.route.component).map(branch => {
+                const params = { match: branch.match, cancelToken };
+                return fetchPreload(branch.route.component, params);
             }));
-    
+
             if (transitions.has(callback)) {
                 callback(true);
                 transitions.clear();
@@ -119,7 +144,7 @@ export function createBrowserHistory(instanceOptions = defaultOptions) {
              * @return {Promise|void}
              */
             getUserConfirmation: (message, callback) => {
-    
+
                 switch (message) {
     
                     case key: {
