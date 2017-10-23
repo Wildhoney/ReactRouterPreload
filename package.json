@@ -1,7 +1,7 @@
 {
   "name": "react-router-preload",
   "version": "0.1.0",
-  "description": "Augments React Router v4 to support preloading data before route changes, AJAX cancellation, and other niceties that were a whole lot easier with React Router v3.",
+  "description": "Augments React Router v4 to support preloading data before route changes, AJAX cancellation, SSR fetching, and other niceties.",
   "main": "dist/index.js",
   "scripts": {
     "test": "ava"
@@ -12,9 +12,8 @@
   },
   "keywords": [
     "react",
-    "router",
+    "react router",
     "async",
-    "preloading",
     "data",
     "preload",
     "ajax",
