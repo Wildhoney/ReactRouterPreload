@@ -1,5 +1,5 @@
 
-import { createBrowserHistory } from 'history';
+import { createBrowserHistory as createHistory } from 'history';
 import { matchRoutes } from 'react-router-config';
 
 /**
@@ -9,24 +9,50 @@ import { matchRoutes } from 'react-router-config';
 const key = '@@react-router-component-will-fetch';
 
 /**
+ * @constant handler
+ * @type {Symbol}
+ */
+export const handler = Symbol('react-router/fetch-data');
+
+/**
  * @constant defaultOptions
  * @type {Object}
  */
 const defaultOptions = {
     createCancelToken: () => Symbol('cancelToken'),
-    handleFunction: 'componentWillFetch',
     cancelOnEscape: true,
-    onEntering: () => console.log('Entering'),
-    onEntered: location => console.log('Entered'),
+    onEnter: () => console.log('Entering'),
+    onLoaded: location => console.log('Entered'),
     onCancel: () => console.log('Cancelled')
 };
 
 /**
- * @method withAsync
- * @param {Object} [options = defaultOptions]
+ * @method withPreload
+ * @param {React.Component} Component
+ * @param {Promise} fetchData
+ * @return {React.Component}
+ */
+export function withPreload(Component, fetchData) {
+    Component[handler] = fetchData;
+    return Component;
+}
+
+/**
+ * @method fetchPreload
+ * @param {React.Component} Component
+ * @param {Array} params
+ * @return {Promise}
+ */
+export function fetchPreload(Component, ...params) {
+    return Component[handler](...params);
+}
+
+/**
+ * @method createBrowserHistoryWithRouter
+ * @param {Object} [instanceOptions = defaultOptions]
  * @return {Object}
  */
-export default function withAsync(instanceOptions = defaultOptions) {
+export function createBrowserHistory(instanceOptions = defaultOptions) {
 
     const options = { ...defaultOptions, ...instanceOptions };
 
@@ -37,19 +63,19 @@ export default function withAsync(instanceOptions = defaultOptions) {
     return (browserHistoryOptions = {}) => {
 
         /**
-         * @constant navigation
+         * @constant transitions
          * @type {Set}
          */
-        const navigations = new Set();
+        const transitions = new Set();
         
         /**
          * @method cancelAll
          * @return {void}
          */
         function cancelAll() {
-            navigations.size > 0 && options.onCancel(navigations.size);
-            navigations.forEach(callback => callback(false));
-            navigations.clear();
+            transitions.size > 0 && options.onCancel(transitions.size);
+            transitions.forEach(callback => callback(false));
+            transitions.clear();
         }
     
         /**
@@ -61,21 +87,21 @@ export default function withAsync(instanceOptions = defaultOptions) {
         async function handle(location, callback) {
             
             cancelAll();
-            options.onEntering(location);
-            navigations.add(callback);
+            options.onEnter(location);
+            transitions.add(callback);
             
             const branches = matchRoutes(options.routeTree, location.pathname);
             const cancelToken = options.createCancelToken();
     
             await Promise.all(branches.map(branch => {
-                const componentWillFetch = branch.route.component[options.handleFunction] || (() => {});
-                return componentWillFetch({ match: branch.match, cancelToken });
+                const fetchData = branch.route.component[handler] || (() => {});
+                return fetchData({ match: branch.match, cancelToken });
             }));
     
-            if (navigations.has(callback)) {
+            if (transitions.has(callback)) {
                 callback(true);
-                navigations.clear();
-                options.onEntered(location);
+                transitions.clear();
+                options.onLoaded(location);
             }
     
         }
@@ -83,7 +109,7 @@ export default function withAsync(instanceOptions = defaultOptions) {
         // Handle the event where the user hits the escape key during the transitioning phase.
         options.cancelOnEscape && window.addEventListener('keydown', event => event.key === 'Escape' && cancelAll());
     
-        const history = createBrowserHistory({
+        const history = createHistory({
             ...browserHistoryOptions,
     
             /**
