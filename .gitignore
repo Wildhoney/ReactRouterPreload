@@ -4,3 +4,6 @@ node_modules
 # coveralls
 .nyc_output
 coverage
+
+# example
+example/build
