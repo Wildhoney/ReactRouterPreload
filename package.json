@@ -6,7 +6,9 @@
   "scripts": {
     "test": "nyc ava",
     "clean": "rimraf .nyc_output node_modules coverage",
-    "build": "webpack"
+    "build": "webpack --config webpack.production.js & webpack --config webpack.development.js & wait",
+    "watch": "webpack --config webpack.development.js --watch",
+    "start": "http-server ./example -p ${PORT:-8080} -go"
   },
   "repository": {
     "type": "git",
@@ -43,6 +45,7 @@
     "enzyme": "~3.0.0",
     "enzyme-adapter-react-16": "~1.0.1",
     "history": "~4.7.2",
+    "http-server": "~0.10.0",
     "nyc": "~11.1.0",
     "react": "~16.0.0",
     "react-dom": "~16.0.0",
@@ -52,6 +55,7 @@
     "rimraf": "~2.6.2",
     "sinon": "~2.3.8",
     "starwars": "~1.0.0",
+    "uglifyjs-webpack-plugin": "~0.4.6",
     "webpack": "~3.0.0"
   },
   "ava": {
