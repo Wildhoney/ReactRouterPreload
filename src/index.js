@@ -1,13 +1,8 @@
 
-import { PureComponent } from 'react';
+import React, { Component, PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import { matchRoutes } from 'react-router-config';
-import { createBrowserHistory as createHistory } from 'history';
-
-/**
- * @constant key
- * @type {String}
- */
-const key = '@@react-router-component-will-fetch';
+import { BrowserRouter } from 'react-router-dom';
 
 /**
  * @constant handler
@@ -16,49 +11,198 @@ const key = '@@react-router-component-will-fetch';
 export const handler = Symbol('react-router/fetch-data');
 
 /**
- * @constant defaultOptions
- * @type {Object}
+ * @class BlockRouter
+ * @extends {PureComponent}
  */
-const defaultOptions = {
-    createCancelToken: () => Symbol('cancelToken'),
-    cancelOnEscape: true,
-    routeTree: [],
-    onEnter: () => console.log('Entering'),
-    onLoaded: location => console.log('Entered'),
-    onCancel: () => console.log('Cancelled')
-};
+class BlockRouter extends Component {
+    
+    /**
+     * @constant contextTypes
+     * @type {Object}
+     */
+    static contextTypes = {
+        router: PropTypes.object.isRequired
+    };
+
+    /**
+     * @method componentWillMount
+     * @return {void}
+     */
+    componentWillMount() {
+        this.context.router.history.block(location => `:${location.pathname}`);
+    }
+    
+    /**
+     * @method render
+     * @return {XML}
+     */
+    render() {
+        return this.props.children;
+    }
+
+}
 
 /**
- * @method withPreload
- * @param {React.Component} WrappedComponent
- * @param {Promise} fetchData
- * @return {React.Component}
+ * @class Router
+ * @extends {PureComponent}
  */
-export function withPreload(WrappedComponent, fetchData) {
+export class Router extends Component {
 
-    return class extends PureComponent {
+    /**
+     * @constant propTypes
+     * @type {Object}
+     */
+    static propTypes = {
+        tree: PropTypes.array.isRequired,
+        onEnter: PropTypes.func,
+        onCancel: PropTypes.func,
+        onLoaded: PropTypes.func,
+        getUserConfirmation: PropTypes.func,
+        createCancelToken: PropTypes.func,
+        isEscapeCancellable: PropTypes.bool
+    };
 
-        /**
-         * @constant handler
-         * @type {Symbol}
-         */
-        static [handler] = fetchData;
+    /**
+     * @constant defaultProps
+     * @type {Object}
+     */
+    static defaultProps = {
+        isEscapeCancellable: true,
+        onEnter: location => console.log(`Preload: Entering   ${location}`),
+        onCancel: count => console.warn(`Preload: Cancelled ${count} Request(s)`),
+        onLoaded: location => console.info(`Preload: Loaded     ${location}`),
+        getUserConfirmation: message => callback(window.confirm.message(message)),
+        createCancelToken: () => function MockCancelToken() {}
+    };
 
-        /**
-         * @constant displayName
-         * @type {String}
-         */
-        static displayName = WrappedComponent.displayName || WrappedComponent.name;
+    /**
+     * @constant transitions
+     * @type {Set}
+     */
+    transitions = new Set();
 
-        /**
-         * @method render
-         * @return {XML}
-         */
-        render() {
-            return <WrappedComponent {...this.props} />;
+    /**
+     * @method load
+     * @param {String} message
+     * @param {Function} callback
+     * @return {void}
+     */
+    load(message, callback) {
+
+        switch (message.startsWith(':')) {
+            
+            case true:
+                const location = message.replace(/^:/, '');
+                return this.handle(location, callback);
+
+            default:
+                return this.props.getUserConfirmation(message, callback);
+
         }
 
     }
+
+    /**
+     * @method handle
+     * @param {String} location
+     * @param {Function} callback
+     * @return {void}
+     */
+    async handle(location, callback) {
+        
+        this.cancelOutstanding();
+        this.props.onEnter(location);
+        this.transitions.add(callback);
+        
+        this.props.isEscapeCancellable && window.addEventListener('keydown', event => event.key === 'Escape' && this.cancelAll(), {
+            once: true
+        });
+
+        const branches = matchRoutes(this.props.tree, location);
+        const cancelToken = this.props.createCancelToken();
+
+        await Promise.all(branches.filter(branch => branch.route.component).map(branch => {
+            const params = { match: branch.match, cancelToken };
+            return fetchPreload(branch.route.component, params);
+        }));
+
+        if (this.transitions.has(callback)) {
+            callback(true);
+            this.transitions.clear();
+            this.props.onLoaded(location);
+        }
+
+    }
+
+    /**
+     * @method cancelOutstanding
+     * @return {void}
+     */
+    cancelOutstanding() {
+        this.transitions.size > 0 && this.props.onCancel(this.transitions.size);
+        this.transitions.clear();
+    }
+
+    /**
+     * @method cancelAll
+     * @return {void}
+     */
+    cancelAll() {
+        this.transitions.size > 0 && this.props.onCancel(this.transitions.size);
+        this.transitions.forEach(callback => callback(false));
+        this.transitions.clear();
+    }
+
+    /**
+     * @method render
+     * @return {XML}
+     */
+    render() {
+
+        return (
+            <BrowserRouter getUserConfirmation={this.load.bind(this)}>
+                <BlockRouter>{this.props.children}</BlockRouter>
+            </BrowserRouter>
+        );
+
+    }
+
+}
+
+/**
+ * @method withPreload
+ * @param {Promise} fetchData
+ * @return {Function}
+ */
+export function withPreload(fetchData) {
+
+    return WrappedComponent => {
+
+        return class extends PureComponent {
+            
+            /**
+             * @constant handler
+             * @type {Symbol}
+             */
+            static [handler] = fetchData;
+    
+            /**
+             * @constant displayName
+             * @type {String}
+             */
+            static displayName = WrappedComponent.displayName || WrappedComponent.name;
+    
+            /**
+             * @method render
+             * @return {XML}
+             */
+            render() {
+                return <WrappedComponent {...this.props} />;
+            }
+    
+        }
+
+    };
 
 }
 
@@ -70,100 +214,4 @@ export function withPreload(WrappedComponent, fetchData) {
  */
 export function fetchPreload(Component, ...params) {
     return handler in Component && Component[handler](...params);
-}
-
-/**
- * @method createBrowserHistoryWithRouter
- * @param {Object} [instanceOptions = defaultOptions]
- * @return {Object}
- */
-export function createBrowserHistory(instanceOptions = defaultOptions) {
-
-    const options = { ...defaultOptions, ...instanceOptions };
-
-    /**
-     * @param {Object} [browserHistoryOptions = {}]
-     * @return {Object}
-     */
-    return (browserHistoryOptions = {}) => {
-
-        /**
-         * @constant transitions
-         * @type {Set}
-         */
-        const transitions = new Set();
-        
-        /**
-         * @method cancelAll
-         * @return {void}
-         */
-        function cancelAll() {
-            transitions.size > 0 && options.onCancel(transitions.size);
-            transitions.forEach(callback => callback(false));
-            transitions.clear();
-        }
-    
-        /**
-         * @method handle
-         * @param {Object} location
-         * @param {Function} callback
-         * @return {void}
-         */
-        async function handle(location, callback) {
-            
-            cancelAll();
-            options.onEnter(location);
-            transitions.add(callback);
-            
-            const branches = matchRoutes(options.routeTree, location.pathname);
-            const cancelToken = options.createCancelToken();
-    
-            await Promise.all(branches.filter(branch => branch.route.component).map(branch => {
-                const params = { match: branch.match, cancelToken };
-                return fetchPreload(branch.route.component, params);
-            }));
-
-            if (transitions.has(callback)) {
-                callback(true);
-                transitions.clear();
-                options.onLoaded(location);
-            }
-    
-        }
-        
-        // Handle the event where the user hits the escape key during the transitioning phase.
-        options.cancelOnEscape && window.addEventListener('keydown', event => event.key === 'Escape' && cancelAll());
-    
-        const history = createHistory({
-            ...browserHistoryOptions,
-    
-            /**
-             * @method getUserConfirmation
-             * @param {String} message
-             * @param {Function} callback
-             * @return {Promise|void}
-             */
-            getUserConfirmation: (message, callback) => {
-
-                switch (message) {
-    
-                    case key: {
-                        return handle(history.location, callback);
-                    }
-                    
-                    default: {
-                        const create = options.createUserConfirmation || (message => callback(window.confirm.message(message)));
-                        return create(message, callback);
-                    }
-    
-                }
-    
-            }
-        });
-    
-        history.block(key);
-        return history;
-
-    };
-
 }
