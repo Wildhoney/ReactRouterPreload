@@ -11,6 +11,12 @@ import { BrowserRouter } from 'react-router-dom';
 export const handler = Symbol('react-router/fetch-data');
 
 /**
+ * @constant prefix
+ * @type {String}
+ */
+const prefix = ':';
+
+/**
  * @class BlockRouter
  * @extends {PureComponent}
  */
@@ -29,7 +35,7 @@ class BlockRouter extends Component {
      * @return {void}
      */
     componentWillMount() {
-        this.context.router.history.block(location => `:${location.pathname}`);
+        this.context.router.history.block(location => `${prefix}${location.pathname}`);
     }
     
     /**
@@ -89,10 +95,10 @@ export class Router extends Component {
      */
     load(message, callback) {
 
-        switch (message.startsWith(':')) {
+        switch (message.startsWith(prefix)) {
             
             case true:
-                const location = message.replace(/^:/, '');
+                const location = message.replace(new RegExp(`^${prefix}`), '');
                 return this.handle(location, callback);
 
             default:
