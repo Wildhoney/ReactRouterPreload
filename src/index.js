@@ -17,10 +17,10 @@ export const handler = Symbol('react-router/fetch-data');
 const prefix = ':';
 
 /**
- * @class BlockRouter
+ * @class ApplyRouteBlock
  * @extends {PureComponent}
  */
-class BlockRouter extends Component {
+class ApplyRouteBlock extends Component {
     
     /**
      * @constant contextTypes
@@ -167,7 +167,7 @@ export class Router extends Component {
 
         return (
             <BrowserRouter getUserConfirmation={this.load.bind(this)}>
-                <BlockRouter>{this.props.children}</BlockRouter>
+                <ApplyRouteBlock>{this.props.children}</ApplyRouteBlock>
             </BrowserRouter>
         );
 
