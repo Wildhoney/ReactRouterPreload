@@ -1,3 +1,4 @@
+module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -321,19 +322,19 @@ function createBrowserHistory() {
 /* 1 */
 /***/ (function(module, exports) {
 
-module.exports = react;
+module.exports = require("react");
 
 /***/ }),
 /* 2 */
 /***/ (function(module, exports) {
 
-module.exports = react-router-config;
+module.exports = require("react-router-config");
 
 /***/ }),
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = history;
+module.exports = require("history");
 
 /***/ })
 /******/ ]);
