@@ -9,7 +9,8 @@ module.exports = {
     },
     externals: {
         react: true,
+        'react-router-dom': true,
         'react-router-config': true,
-        history: true
+        'prop-types': true
     }
 };
