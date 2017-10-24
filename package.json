@@ -4,11 +4,12 @@
   "description": "Augments React Router v4 to support preloading data before route changes, AJAX cancellation, SSR fetching, and other niceties.",
   "main": "dist/index.js",
   "scripts": {
-    "test": "nyc ava"
+    "test": "nyc ava",
+    "clean": "rimraf .nyc_output node_modules coverage"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Wildhoney/react-router-preload.git"
+    "url": "git+https://github.com/Wildhoney/ReactRouterPreload.git"
   },
   "keywords": [
     "react",
@@ -22,13 +23,9 @@
   "author": "Adam Timberlake <adam.timberlake@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Wildhoney/react-router-preload/issues"
+    "url": "https://github.com/Wildhoney/ReactRouterPreload/issues"
   },
-  "homepage": "https://github.com/Wildhoney/react-router-preload#readme",
-  "dependencies": {
-    "history": "~4.7.2",
-    "react-router-config": "~1.0.0-beta.4"
-  },
+  "homepage": "https://github.com/Wildhoney/ReactRouterPreload#readme",
   "peerDependencies": {
     "history": ">=4.0.0",
     "react-router-config": ">=1.0.0"
@@ -43,11 +40,14 @@
     "delay": "~2.0.0",
     "enzyme": "~3.0.0",
     "enzyme-adapter-react-16": "~1.0.1",
+    "history": "~4.7.2",
     "nyc": "~11.1.0",
     "react": "~16.0.0",
     "react-dom": "~16.0.0",
+    "react-router-config": "~1.0.0-beta.4",
     "react-router-dom": "~4.1.2",
     "react-test-renderer": "~16.0.0",
+    "rimraf": "~2.6.2",
     "sinon": "~2.3.8",
     "starwars": "~1.0.0"
   },
