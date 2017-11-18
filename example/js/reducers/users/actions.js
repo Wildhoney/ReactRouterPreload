@@ -3,13 +3,14 @@ import * as type from './types';
 
 /**
  * @method fetchUser
- * @param {String} username
+ * @param {String} [username]
  * @return {Function}
  */
-export function fetchUser(username) {
+export function fetchUser(username, cancelToken) {
 
     return async dispatch => {
-        return dispatch(({ type: type.FETCH_USER, result }));
+        const { data } = await instance.get('https://randomuser.me/api', { cancelToken });
+        return dispatch(({ type: type.FETCH_USER, result: data.results[0] }));
     };
 
 }

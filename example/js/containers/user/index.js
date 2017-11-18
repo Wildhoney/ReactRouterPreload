@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { instance } from '../../helpers/request';
 import { withRouter, NavLink } from 'react-router-dom';
 import { compose } from 'ramda';
 import * as actions from '../../reducers/users/actions';
-import { withPreload } from '../../../../src/index';
+import { withPreload, fetchPreload } from '../../../../src/index';
 
 /**
  * @method mapStateToProps
@@ -30,7 +31,15 @@ export class User extends PureComponent {
      * @type {Object}
      */
     static propTypes = {
-        user: PropTypes.object.isRequired
+        user: PropTypes.object
+    };
+
+    /**
+     * @constant defaultProps
+     * @type {Object}
+     */
+    static defaultProps = {
+        user: null
     };
 
     /**
@@ -39,10 +48,12 @@ export class User extends PureComponent {
      */
     render() {
 
+        const name = `${this.props.user.name.first} ${this.props.user.name.last}`;
+
         return (
             <main className="user">
-                <header>{this.props.match.params.username}</header>
-                <NavLink to={`/user/${Math.random()}`}>Goto Next</NavLink>
+                <header>{name}</header>
+                <NavLink to={`/user/${Math.ceil(Math.random() * 10)}.html`}>Goto Next</NavLink>
             </main>
         );
 
@@ -50,8 +61,14 @@ export class User extends PureComponent {
 
 }
 
-const fetchData = () => {
-    return Promise.resolve('xx!');
+/**
+ * @constant fetchData
+ * @param {Function} dispatch
+ * @param {Object} match
+ * @return {Promise}
+ */
+const fetchData = ({ dispatch, match, cancelToken }) => {
+    return dispatch(actions.fetchUser(match.params.username, cancelToken));
 };
 
 const apply = compose(withRouter, connect(mapStateToProps), withPreload(fetchData));

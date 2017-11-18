@@ -5,7 +5,7 @@ import * as type from './types';
  * @type {Object}
  */
 const INITIAL_STATE = {
-    user: {},
+    user: null,
     friends: []
 };
 
